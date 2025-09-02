@@ -1,0 +1,785 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación para el Aprendiz</title>
+    <script src="https://cdn.tailwindcss.com"><</script>>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><</script>>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"><</script>>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; } 
+        .custom-modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .custom-modal-content { background-color: white; padding: 2rem; border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); max-width: 90%; width: 400px; text-align: center; }
+        .custom-modal-content p { margin-bottom: 1.5rem; }
+        .custom-modal-content button { background-color: #4f46e5; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; border: none; cursor: pointer; }
+        .lineal-container { position: relative; }
+        .lineal-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        .line-handle { width: 14px; height: 14px; background-color: #a5b4fc; border: 2px solid #6366f1; border-radius: 50%; cursor: pointer; transition: background-color 0.2s; z-index: 2; }
+        .line-handle:hover { background-color: #6366f1; }
+        .line-handle.connected { background-color: #10b981; border-color: #059669; }
+        .drag-title { cursor: grab; }
+        .drag-title.dragging { opacity: 0.5; transform: scale(0.95); }
+        .drop-definition.hovering { border-color: #4f46e5; background-color: #eef2ff; transform: scale(1.02); }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-4xl bg-white rounded-lg shadow-lg p-8 relative">
+        <div class="text-center border-b pb-6 mb-8">
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-transparent bg-clip-text drop-shadow-sm">Evaluación</h1>
+            <h2 class="text-2xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-transparent bg-clip-text drop-shadow-sm mt-2">Programa SENATIC</h2>
+            <h3 class="text-xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-transparent bg-clip-text drop-shadow-sm">Técnico en Sistemas Teleinformáticos</h3>
+        </div>
+        
+        <form id="studentDetailsForm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 border-b pb-6 mb-8 text-base">
+                <div>
+                    <label class="font-medium">Competencia:</label>
+                    <select id="form_competencia" class="mt-1 block w-full px-2 py-1 bg-gradient-to-r from-blue-50 to-indigo-100 border border-gray-300 rounded-md text-base" required>
+                        <option value="">Seleccione una opción</option>
+                        <option>Mantenimiento de los equipos de cómputo</option>
+                        <option>Operación de herramientas informáticas</option>
+                        <option>Verificación del funcionamiento de la red de datos</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-medium">Rap:</label>
+                    <select id="form_rap" class="mt-1 block w-full px-2 py-1 bg-gradient-to-r from-blue-50 to-indigo-100 border border-gray-300 rounded-md text-base" required>
+                        <option value="">Seleccione una competencia primero</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-medium">Tipo de Instrumento:</label>
+                    <select id="form_instrumento" class="mt-1 block w-full px-2 py-1 bg-gradient-to-r from-blue-50 to-indigo-100 border border-gray-300 rounded-md text-base" required>
+                        <option value="">Seleccione una opción</option>
+                        <option>Conocimiento</option>
+                        <option>Desempeño</option>
+                        <option>Producto</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-medium">Tema a Evaluar:</label>
+                    <select id="form_tema" class="mt-1 block w-full px-2 py-1 bg-gradient-to-r from-blue-50 to-indigo-100 border border-gray-300 rounded-md text-base" required>
+                        <option value="">Seleccione una opción</option>
+                        <option>Evaluacion de conocimiento, conceptos y principios</option>
+                        <option>Mantenimiento Preventivo de CRU - Lógico y Físico</option>
+                        <option>Utilizar los sistemas operativos y software utilitario</option>
+                        <option>Manejo de residuos ambientales (RAEE) y elementos de protección personal</option>
+                    </select>
+                </div>
+                <div><label class="font-medium">Fecha:</label><input id="form_fecha" type="date" class="mt-1 block w-full px-2 py-1 bg-gradient-to-r from-blue-50 to-indigo-100 border border-gray-300 rounded-md text-base" required></div>
+                <div>
+                    <label class="font-medium">Ficha:</label>
+                    <select id="form_ficha" class="mt-1 block w-full px-2 py-1 bg-gradient-to-r from-blue-50 to-indigo-100 border border-gray-300 rounded-md text-base" required>
+                        <option value="">Seleccione una opción</option>
+                        <option>3010320</option>
+                        <option>3010341</option>
+                        <option>3002298</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2"><label class="font-medium">Instructor:</label><p class="mt-1 block w-full px-2 py-1 text-base">Rafael Montes Martínez</p></div>
+                <div class="md:col-span-2">
+                    <label class="font-medium">Nombre del Aprendiz:</label>
+                    <input type="text" id="studentName" class="mt-1 block w-full px-2 py-1 bg-gradient-to-r from-yellow-100 to-orange-100 border border-gray-300 rounded-md text-base text-black" placeholder="Escriba su nombre completo aquí..." oninput="this.value = this.value.toUpperCase()" required>
+                </div>
+            </div>
+        </form>
+
+        <div id="studentQuestionsList" class="space-y-6"></div>
+        <div id="noEvaluationMessage" class="hidden text-center py-10"><p class="text-gray-500 text-lg">No hay ninguna evaluación guardada para mostrar.</p></div>
+        <div class="mt-8 flex justify-end space-x-4">
+            <button type="button" id="generateStudentPdfBtn" class="w-full md:w-auto inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 hidden">Descargar evaluación</button>
+            <button type="button" id="finishEvaluationBtn" class="w-full md:w-auto inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hidden">Finalizar Evaluación</button>
+        </div>
+        <div id="finalScoreContainer" class="hidden mt-8 p-6 bg-yellow-300 rounded-lg text-center">
+            <p id="finalScoreText" class="text-2xl font-bold text-green-700"></p>
+        </div>
+    </div>
+    <div id="customModal" class="custom-modal-backdrop">
+        <div class="custom-modal-content">
+            <p id="modalMessage"></p>
+            <button id="modalCloseBtn">Cerrar</button>
+        </div>
+    </div>
+    <script>
+        const studentQuestionsList = document.getElementById('studentQuestionsList');
+        const noEvaluationMessage = document.getElementById('noEvaluationMessage');
+        const finishEvaluationBtn = document.getElementById('finishEvaluationBtn');
+        const generateStudentPdfBtn = document.getElementById('generateStudentPdfBtn');
+        const finalScoreContainer = document.getElementById('finalScoreContainer');
+        const finalScoreText = document.getElementById('finalScoreText');
+        const studentDetailsForm = document.getElementById('studentDetailsForm');
+        const customModal = document.getElementById('customModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        
+        let studentQuestions = [{"id":"question-1756817486115-0.4563205860748746","type":"Selección múltiple con múltiples respuestas","question":"¿Cuáles son los dos pilares fundamentales en la seguridad y mantenimiento de computadores, según el texto?","correctAnswer":"[\"La gestión adecuada de los residuos electrónicos.\",\"El uso correcto de los Elementos de Protección Personal (EPP).\"]","options":["El uso correcto de los Elementos de Protección Personal (EPP).","La optimización del rendimiento del hardware.","La gestión adecuada de los residuos electrónicos.","La actualización constante del software."]},{"id":"question-1756817654331-0.03497710015255373","type":"Selección múltiple con múltiples respuestas","question":"¿Qué temas son fundamentales para comprender y disponer correctamente los residuos electrónicos (E-Waste), según el manejo de residuos ambientales?","correctAnswer":"[\"Tipos de Residuos Electrónicos (E-Waste)\",\"Sustancias Peligrosas en E-Waste\",\"Disposición Correcta de E-Waste\"]","options":["Disposición Correcta de E-Waste","Configuración de sistemas operativos","Tipos de Residuos Electrónicos (E-Waste)","Mantenimiento preventivo de software","Sustancias Peligrosas en E-Waste"]},{"id":"question-1756818749089-0.8435794706032488","type":"Pregunta Abierta","question":"¿Qué significa la sigla E-Waste o RAEE en el contexto del manejo de residuos ambientales?","correctAnswer":"Residuos de Aparatos Eléctricos y Electrónicos","options":[]},{"id":"question-1756819187606-0.44493097730295494","type":"Selección múltiple con múltiples respuestas","question":"¿Según el texto, cuáles de los siguientes elementos son considerados residuos electrónicos (E-Waste o RAEE)?","correctAnswer":"[\"computadoras\",\"monitores\",\"impresoras\",\"teclados\",\"ratones\",\"teléfonos inteligentes\",\"componentes internos de dispositivos electrónicos\"]","options":["teclados","componentes internos de dispositivos electrónicos","ratones","teléfonos inteligentes","impresoras","envases de vidrio","monitores","computadoras","restos de comida"]},{"id":"question-1756819302767-0.9535759811516966","type":"Selección múltiple con múltiples respuestas","question":"¿Cuáles de los siguientes materiales valiosos se pueden encontrar en los residuos electrónicos (E-Waste o Raee)?","correctAnswer":"[\"oro\",\"plata\",\"cobre\",\"aluminio\"]","options":["plata","vidrio","aluminio","oro","cobre","plástico"]},{"id":"question-1756819455474-0.494007719021346","type":"Selección múltiple con múltiples respuestas","question":"¿Cuáles de las siguientes sustancias peligrosas se pueden encontrar comúnmente en los componentes electrónicos o E-Waste (RAEE) según el texto?","correctAnswer":"[\"Plomo\",\"Mercurio\",\"Cadmio\",\"Cromo hexavalente\"]","options":["Silicio","Cromo hexavalente","Mercurio","Aluminio","Plomo","Cadmio"]},{"id":"question-1756819606153-0.05176491137387207","type":"Complete","question":"La liberación de sustancias peligrosas al medio ambiente puede contaminar el ____ y el agua, afectando la salud humana y la vida silvestre.","correctAnswer":"suelo","options":[]},{"id":"question-1756820249104-0.10182302197485582","type":"Listas","question":"Relacione cada acción o concepto sobre la disposición de E-Waste o Raee con su descripción o práctica recomendada.","correctAnswer":"[{\"termino\":\"Desechar E-Waste o Raee en la basura común\",\"definicion\":\"Es ilegal en muchos lugares y extremadamente perjudicial para el medio ambiente.\"},{\"termino\":\"Lugares recomendados para llevar equipos electrónicos\",\"definicion\":\"Puntos de recolección especializados o centros de reciclaje certificados.\"},{\"termino\":\"Programas de reciclaje ofrecidos por empresas\",\"definicion\":\"Algunos fabricantes y minoristas ofrecen programas de devolución o reciclaje.\"}]","options":[]},{"id":"question-1756821048408-0.16023190034108958","type":"Selección múltiple con múltiples respuestas","question":"Según la lista de verificación de disposición responsable, ¿cuáles son los pasos clave a seguir para el manejo de residuos tecnológicos?","correctAnswer":"[\"Clasificar residuos (e-waste, baterías, etc.)\",\"Separar componentes (plásticos, metales, circuitos)\",\"Almacenar temporalmente en lugares seguros\",\"Contactar un centro de reciclaje certificado\",\"Borrar datos sensibles de los dispositivos\"]","options":["Desechar todos los componentes en la basura común","Borrar datos sensibles de los dispositivos","Almacenar temporalmente en lugares seguros","Clasificar residuos (e-waste, baterías, etc.)","Contactar un centro de reciclaje certificado","Vender los dispositivos sin borrar los datos sensibles","Separar componentes (plásticos, metales, circuitos)"]},{"id":"question-1756821900249-0.5625160810344684","type":"Selección múltiple con múltiples respuestas","question":"Según el texto, ¿cuáles de los siguientes son elementos de Protección Personal (EPP) necesarios para la seguridad y mantenimiento de computadores?","correctAnswer":"[\"Pulsera antiestática (ESD)\",\"Gafas de seguridad\",\"Guantes de Protección (Nitrilo/Látex)\",\"Mascarilla (para polvo/humor)\"]","options":["Guantes de Protección (Nitrilo/Látex)","Monitor LCD","Mascarilla (para polvo/humor)","Gafas de seguridad","Destornillador Phillips","Pulsera antiestática (ESD)"]},{"id":"question-1756822520230-0.004310080230876423","type":"Arrastrar y Soltar","question":"Empareja cada elemento de Equipo de Protección Personal (EPP) con su propósito principal al realizar el mantenimiento de computadores.","correctAnswer":"[{\"termino\":\"Pulsera antiestática (ESD)\",\"definicion\":\"Previene descargas electrostáticas (ESD) que pueden dañar componentes electrónicos sensibles.\"},{\"termino\":\"Gafas de seguridad\",\"definicion\":\"Protege los ojos de partículas voladoras, salpicaduras de líquidos o polvo.\"},{\"termino\":\"Guantes de Protección\",\"definicion\":\"Protege las manos de suciedad, aceites, químicos y bordes afilados, y reduce la transferencia de aceites corporales.\"},{\"termino\":\"Mascarilla (para polvo/humo)\",\"definicion\":\"Protege el sistema respiratorio del polvo fino, humos de soldadura o vapores de limpieza.\"}]","options":[]},{"id":"question-1756823131655-0.3997376878876694","type":"Pregunta Abierta","question":"¿Qué significa EPP?","correctAnswer":"Elementos de Protección Personal","options":[]},{"id":"question-1756823230522-0.800609736557431","type":"Verdadero o Falso","question":"La alfombra antiestática es considerada un EPP esencial según la lista de verificación.","correctAnswer":"Verdadero","options":[]},{"id":"question-1756823547259-0.9992841444114543","type":"Lineal","question":"Relaciona cada consejo de seguridad y medio ambiente con su descripción correspondiente.","correctAnswer":"[{\"termino\":\"Actualización Continua\",\"definicion\":\"Mantenerse informado sobre las últimas directrices en normativas ambientales y de seguridad.\"},{\"termino\":\"Capacitación\",\"definicion\":\"Participar en formaciones sobre manejo de residuos y seguridad en el trabajo.\"},{\"termino\":\"Inspección Regular de EPP\",\"definicion\":\"Verificar el buen estado del Equipo de Protección Personal y reemplazarlo si está dañado o desgastado.\"},{\"termino\":\"Minimización de Residuos\",\"definicion\":\"Considerar la reparación y reutilización de componentes para reducir la generación de desechos.\"},{\"termino\":\"Limpieza del Área de Trabajo\",\"definicion\":\"Mantener el espacio de trabajo ordenado y limpio para prevenir accidentes y facilitar el manejo de residuos.\"}]","options":[]}];
+        let finalStudentScore = { correct: 0, total: 0 };
+
+        const showAlert = (message) => {
+            modalMessage.textContent = message;
+            customModal.style.display = 'flex';
+        };
+        modalCloseBtn.addEventListener('click', () => {
+            customModal.style.display = 'none';
+        });
+
+        const competenciaSelect = document.getElementById('form_competencia');
+        const rapSelect = document.getElementById('form_rap');
+
+        const rapOptions = {
+            'Mantenimiento de los equipos de cómputo': [
+                'RAP 01 - preparar el mantenimiento de los equipos de cómputo de acuerdo con procedimientos técnicos y administrativos',
+                'RAP 02 - realizar mantenimiento integral de los sistemas de cómputo según procedimiento y manuales técnicos',
+                'RAP 03 - verificar la operación del sistema computacional de acuerdo con los procedimientos técnicos',
+                'RAP 04 - documentar el mantenimiento del equipo de cómputo según procedimiento técnico'
+            ],
+            'Operación de herramientas informáticas': [
+                'RAP 01 - caracterizar herramientas informáticas según contexto tecnológico de la organización',
+                'RAP 02 - implementar componentes de las herramientas tecnológicas según procedimientos de la organización',
+                'RAP 03 - planificar la información según criterios de ciberseguridad',
+                'RAP 04 - documentar la gestión de la información de acuerdo a protocolos establecidos'
+            ],
+            'Verificación del funcionamiento de la red de datos': [
+                'RAP 01 - definir los parámetros y recursos de la red de acuerdo con normativa de telecomunicaciones',
+                'RAP 02 - comprobar la conectividad de la red, de acuerdo con normativa de telecomunicaciones y orden de trabajo',
+                'RAP 03 - documentar las acciones realizadas en la red de acuerdo con la normativa'
+            ]
+        };
+
+        competenciaSelect.addEventListener('change', (e) => {
+            const selectedCompetencia = e.target.value;
+            // Clear existing RAP options
+            rapSelect.innerHTML = '<option value="">Seleccione una opción</option>';
+            
+            if (rapOptions[selectedCompetencia]) {
+                rapOptions[selectedCompetencia].forEach(rapText => {
+                    const option = document.createElement('option');
+                    option.value = rapText;
+                    option.textContent = rapText;
+                    rapSelect.appendChild(option);
+                });
+            }
+        });
+
+        // Re-usable evaluation logic, same as instructor's side
+        const evaluateSingleQuestion = (block, questionData, mode = 'display') => {
+            const { correctAnswer, type } = questionData;
+            let userAnswer = '';
+            let isCorrect = false;
+
+            if (type === 'Selección múltiple con única respuesta' || type === 'Verdadero o Falso') {
+                const selected = block.querySelector('input[type="radio"]:checked');
+                userAnswer = selected ? selected.value : "";
+                isCorrect = userAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim();
+            } else if (type === 'Selección múltiple con múltiples respuestas') {
+                const selectedOptions = Array.from(block.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+                try {
+                    const correctOptions = JSON.parse(correctAnswer);
+                    userAnswer = selectedOptions.join(', ');
+                    isCorrect = selectedOptions.length === correctOptions.length && selectedOptions.every(opt => correctOptions.includes(opt));
+                } catch (e) { isCorrect = false; }
+            } else if (type === 'Arrastrar y Soltar') {
+                let correctMatches = 0;
+                const pairs = JSON.parse(correctAnswer);
+                block.querySelectorAll('.drop-definition').forEach(def => {
+                    const droppedTitle = def.querySelector('.drag-title');
+                    if (droppedTitle && droppedTitle.dataset.id === def.dataset.id) {
+                        correctMatches++;
+                    }
+                });
+                isCorrect = correctMatches === pairs.length;
+                userAnswer = `${correctMatches} de ${pairs.length} parejas correctas.`;
+            } else if (type === 'Enumerar') {
+                const inputs = block.querySelectorAll('.enumerate-input');
+                const totalPairs = inputs.length;
+                let correctMatches = 0;
+                let answers = [];
+                inputs.forEach(input => {
+                    const parentDiv = input.closest('.flex');
+                    const definition = parentDiv.querySelector('div:last-child').textContent;
+                    answers.push(`(${input.value || 'vacío'}) ${definition.substring(0, 25)}...`);
+                    if (input.value === input.dataset.correctNumber) {
+                        correctMatches++;
+                    }
+                });
+                isCorrect = correctMatches === totalPairs;
+                if (mode === 'pdf') {
+                    userAnswer = `Correctas: ${correctMatches}, Incorrectas: ${totalPairs - correctMatches}`;
+                } else {
+                    userAnswer = answers.join('; ');
+                }
+            } else if (type === 'Listas') {
+                const selects = block.querySelectorAll('.list-select');
+                const totalPairs = selects.length;
+                let correctMatches = 0;
+                let answers = [];
+                selects.forEach(select => {
+                    const parentDiv = select.closest('.grid');
+                    const definition = parentDiv.querySelector('div:last-child').textContent;
+                    answers.push(`${select.value || 'vacío'} -> ${definition.substring(0, 25)}...`);
+                    if (select.value === select.dataset.correctTerm) {
+                        correctMatches++;
+                    }
+                });
+                isCorrect = correctMatches === totalPairs;
+                if (mode === 'pdf') {
+                    userAnswer = `Correctas: ${correctMatches}, Incorrectas: ${totalPairs - correctMatches}`;
+                } else {
+                    userAnswer = answers.join('; ');
+                }
+            } else if (type === 'Lineal') {
+                 const pairs = JSON.parse(correctAnswer);
+                const totalPairs = pairs.length;
+                const connections = JSON.parse(block.dataset.connections || '[]');
+                let correctConnections = 0;
+                connections.forEach(conn => {
+                    const correctPair = pairs.find(p => p.termino === conn.startText);
+                    if (correctPair && correctPair.definicion === conn.endText) {
+                        correctConnections++;
+                    }
+                });
+                isCorrect = correctConnections === totalPairs && connections.length === totalPairs;
+                if (mode === 'pdf') {
+                    userAnswer = `Correctas: ${correctConnections}, Incorrectas: ${connections.length - correctConnections}`;
+                } else {
+                    userAnswer = connections.map(c => `${c.startText} -> ${c.endText}`).join('; ');
+                }
+            }
+            else {
+                const input = block.querySelector('.user-answer-input');
+                userAnswer = input ? input.value.trim() : "";
+                isCorrect = userAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim();
+            }
+            return { isCorrect, userAnswer };
+        };
+
+
+        const renderStudentQuestions = () => {
+            studentQuestionsList.innerHTML = '';
+            studentQuestions.forEach((data, index) => {
+                const block = document.createElement('div');
+                block.className = 'question-block-student p-4 bg-gradient-to-r from-gray-50 to-slate-100 border border-gray-200 rounded-md';
+                block.dataset.index = index;
+                let html = `<p class="text-base text-gray-800 font-bold mb-3">${index + 1}. ${data.question.replace(/\n/g, '<br>')}</p>`;
+                if (data.type === 'Selección múltiple con única respuesta') {
+                    html += '<div class="space-y-2 mt-2">';
+                    const colors = [ { bg: 'bg-blue-100', text: 'text-blue-900', ring: 'focus:ring-blue-500', check: 'text-blue-600' }, { bg: 'bg-green-100', text: 'text-green-900', ring: 'focus:ring-green-500', check: 'text-green-600' }, { bg: 'bg-purple-100', text: 'text-purple-900', ring: 'focus:ring-purple-500', check: 'text-purple-600' }, { bg: 'bg-pink-100', text: 'text-pink-900', ring: 'focus:ring-pink-500', check: 'text-pink-600' } ];
+                    data.options.forEach((option, i) => {
+                        const color = colors[i % colors.length];
+                        const optionId = `option-${data.id}-${Math.random().toString(36).substring(7)}`;
+                        html += `<label for="${optionId}" class="flex items-center p-2 rounded-md shadow-sm cursor-pointer ${color.bg}"><input id="${optionId}" name="${data.id}" type="radio" value="${option}" class="h-4 w-4 ${color.check} border-gray-300 ${color.ring}"><span class="ml-3 block text-base font-medium ${color.text}">${option}</span></label>`;
+                    });
+                    html += '</div>';
+                } else if (data.type === 'Verdadero o Falso') {
+                    html += '<div class="space-y-2 mt-2">';
+                    const vfColors = { 'Verdadero': { bg: 'bg-green-100', text: 'text-green-900', ring: 'focus:ring-green-500', check: 'text-green-600' }, 'Falso': { bg: 'bg-red-100', text: 'text-red-900', ring: 'focus:ring-red-500', check: 'text-red-600' } };
+                    ['Verdadero', 'Falso'].forEach(option => {
+                        const color = vfColors[option];
+                        const optionId = `option-${data.id}-${option}`;
+                        html += `<label for="${optionId}" class="flex items-center p-2 rounded-md shadow-sm cursor-pointer ${color.bg}"><input id="${optionId}" name="${data.id}" type="radio" value="${option}" class="h-4 w-4 ${color.check} border-gray-300 ${color.ring}"><span class="ml-3 block text-base font-medium ${color.text}">${option}</span></label>`;
+                    });
+                    html += '</div>';
+                } else if (data.type === 'Selección múltiple con múltiples respuestas') {
+                    html += '<div class="space-y-2 mt-2">';
+                    const colors = [ { bg: 'bg-blue-100', text: 'text-blue-800', ring: 'focus:ring-blue-500', check: 'text-blue-600' }, { bg: 'bg-green-100', text: 'text-green-800', ring: 'focus:ring-green-500', check: 'text-green-600' }, { bg: 'bg-purple-100', text: 'text-purple-800', ring: 'focus:ring-purple-500', check: 'text-purple-600' }, { bg: 'bg-pink-100', text: 'text-pink-800', ring: 'focus:ring-pink-500', check: 'text-pink-600' }, { bg: 'bg-orange-100', text: 'text-orange-800', ring: 'focus:ring-orange-500', check: 'text-orange-600' }, ];
+                    data.options.forEach((option, i) => {
+                        const color = colors[i % colors.length];
+                        const optionId = `option-${data.id}-${Math.random().toString(36).substring(7)}`;
+                        html += `<div class="flex items-center p-2 rounded-md ${color.bg}"><input id="${optionId}" name="${data.id}" type="checkbox" value="${option}" class="h-4 w-4 ${color.check} border-gray-300 rounded ${color.ring}"><label for="${optionId}" class="ml-3 block text-base font-medium ${color.text}">${option}</label></div>`;
+                    });
+                    html += '</div>';
+                } else if (data.type === 'Arrastrar y Soltar') {
+                    const pairs = JSON.parse(data.correctAnswer);
+                    const titles = (JSON.parse(JSON.stringify(pairs))).sort(() => Math.random() - 0.5);
+                    const definitions = (JSON.parse(JSON.stringify(pairs))).sort(() => Math.random() - 0.5);
+
+                    html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div class="bg-white p-4 rounded-xl shadow-lg border border-blue-200">
+                                    <h3 class="text-xl font-bold text-blue-700 mb-4 pb-2 border-b border-blue-100">Títulos</h3>
+                                    <div class="flex flex-col gap-3" id="titles-col-${data.id}">`;
+                    titles.forEach(item => {
+                        html += `<div class="drag-title bg-blue-300 text-blue-900 px-4 py-3 rounded-lg shadow-md cursor-grab select-none" draggable="true" data-id="${item.termino}">${item.termino}</div>`;
+                    });
+                    html += `</div></div>
+                                <div class="bg-white p-4 rounded-xl shadow-lg border border-indigo-200">
+                                    <h3 class="text-xl font-bold text-indigo-700 mb-4 pb-2 border-b border-indigo-100">Definiciones</h3>
+                                    <div class="flex flex-col gap-3">`;
+                    definitions.forEach(item => {
+                        html += `<div class="drop-definition bg-gray-100 text-gray-800 p-4 rounded-lg border-2 border-dashed border-gray-300 min-h-24 flex items-center justify-center text-center" data-id="${item.termino}">${item.definicion}</div>`;
+                    });
+                    html += `</div></div>
+                            </div>`;
+                } else if (data.type === 'Enumerar') {
+                    const pairs = JSON.parse(data.correctAnswer);
+                    const shuffledPairs = (JSON.parse(JSON.stringify(pairs))).sort(() => Math.random() - 0.5);
+                    html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">`;
+                    html += `<div class="space-y-2"><p class="text-xs font-semibold text-gray-500 mb-2">TÉRMINOS</p>`;
+                    pairs.forEach((pair, i) => {
+                        html += `<div class="text-base"><span class="font-bold text-red-600">${i + 1}.</span> ${pair.termino}</div>`;
+                    });
+                    html += `</div>`;
+                    html += `<div class="space-y-3"><p class="text-xs font-semibold text-gray-500 mb-2">DEFINICIONES</p>`;
+                    shuffledPairs.forEach(pair => {
+                        const correctIndex = pairs.findIndex(p => p.termino === pair.termino);
+                        html += `<div class="flex items-center gap-2"><input type="number" class="enumerate-input w-12 h-10 text-center font-bold border-2 border-indigo-300 rounded bg-indigo-50" data-correct-number="${correctIndex + 1}"><div class="text-base">${pair.definicion}</div></div>`;
+                    });
+                    html += `</div></div>`;
+                } else if (data.type === 'Listas') {
+                    const pairs = JSON.parse(data.correctAnswer);
+                    const terms = (JSON.parse(JSON.stringify(pairs))).map(p => p.termino).sort(() => Math.random() - 0.5);
+                    html += `<div class="space-y-3 mt-4">`;
+                    pairs.forEach(pair => {
+                        html += `<div class="grid grid-cols-2 gap-4 items-center">
+                                    <select class="list-select block w-full px-2 py-2 bg-blue-50 border-2 border-blue-300 rounded-md text-blue-700 font-semibold" data-correct-term="${pair.termino}">
+                                        <option value="">Seleccione...</option>`;
+                        terms.forEach(term => {
+                            html += `<option value="${term}">${term}</option>`;
+                        });
+                        html += `</select>
+                                    <div class="text-sm">${pair.definicion}</div>
+                                </div>`;
+                    });
+                    html += `</div>`;
+                } else if (data.type === 'Lineal') {
+                    const pairs = JSON.parse(data.correctAnswer);
+                    const terms = (JSON.parse(JSON.stringify(pairs.map(p => p.termino)))).sort(() => Math.random() - 0.5);
+                    const definitions = (JSON.parse(JSON.stringify(pairs.map(p => p.definicion)))).sort(() => Math.random() - 0.5);
+
+                    html += `<div class="lineal-container mt-4">
+                        <svg class="lineal-svg" id="svg-${data.id}"></svg>
+                        <div class="grid grid-cols-2 gap-8 relative z-10">
+                            <div class="space-y-4" id="lineal-terms-${data.id}">`;
+                    terms.forEach((term, i) => {
+                        html += `<div class="flex items-center gap-3">
+                                            <div class="line-handle" data-id="term-${i}" data-text="${term}" data-type="term"></div>
+                                            <div class="text-sm p-2 bg-blue-100 rounded-md w-full">${term}</div>
+                                        </div>`;
+                    });
+                    html += `</div><div class="space-y-4" id="lineal-defs-${data.id}">`;
+                    definitions.forEach((definition, i) => {
+                         html += `<div class="flex items-center gap-3">
+                                            <div class="text-sm p-2 bg-green-100 rounded-md w-full text-right">${definition}</div>
+                                            <div class="line-handle" data-id="def-${i}" data-text="${definition}" data-type="definition"></div>
+                                        </div>`;
+                    });
+                    html += `</div></div></div>`;
+                }
+                else {
+                    html += `<div class="mt-2"><input type="text" class="user-answer-input block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-base" placeholder="Escriba su respuesta aquí..."></div>`;
+                }
+                html += '<div class="feedback-area mt-3 text-base font-medium"></div>';
+                html += '<div class="mt-4 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full"></div>';
+                block.innerHTML = html;
+                studentQuestionsList.appendChild(block);
+            });
+        };
+
+        const loadEvaluation = () => {
+            if (Array.isArray(studentQuestions) && studentQuestions.length > 0) {
+                renderStudentQuestions();
+                initLinealQuestions();
+                initDragAndDropQuestions();
+                finishEvaluationBtn.classList.remove('hidden');
+            } else {
+                noEvaluationMessage.classList.remove('hidden');
+            }
+        };
+
+        finishEvaluationBtn.addEventListener('click', () => {
+            if (!studentDetailsForm.checkValidity()) {
+                showAlert('Por favor, complete todos los campos del encabezado antes de finalizar.');
+                return;
+            }
+            let correctAnswers = 0;
+            let allAnswered = true;
+            const questionBlocks = document.querySelectorAll('.question-block-student');
+            
+            questionBlocks.forEach(block => {
+                block.style.border = '1px solid #e5e7eb'; // Reset border
+                const questionType = studentQuestions[block.dataset.index].type;
+                let answered = false;
+                if (questionType === 'Selección múltiple con única respuesta' || questionType === 'Verdadero o Falso') {
+                    if (block.querySelector('input[type="radio"]:checked')) answered = true;
+                } else if (questionType === 'Selección múltiple con múltiples respuestas') {
+                    if (block.querySelectorAll('input[type="checkbox"]:checked').length > 0) answered = true;
+                } else if (questionType === 'Arrastrar y Soltar') {
+                    const titlesColumn = block.querySelector('[id^="titles-col-"]');
+                    const titlesLeft = titlesColumn ? titlesColumn.querySelectorAll('.drag-title').length : -1;
+                    if (titlesLeft === 0) answered = true;
+                } else if (questionType === 'Enumerar') {
+                    const inputs = block.querySelectorAll('.enumerate-input');
+                    if (Array.from(inputs).every(input => input.value.trim() !== '')) answered = true;
+                } else if (questionType === 'Listas') {
+                    const selects = block.querySelectorAll('.list-select');
+                    if (Array.from(selects).every(select => select.value.trim() !== '')) answered = true;
+                } else if (questionType === 'Lineal') {
+                    const connections = JSON.parse(block.dataset.connections || '[]');
+                    if (connections.length > 0) answered = true;
+                }
+                else {
+                    const input = block.querySelector('.user-answer-input');
+                    if (input && input.value.trim() !== '') answered = true;
+                }
+                if (!answered) {
+                    allAnswered = false;
+                    block.style.border = '2px solid red';
+                }
+            });
+
+            if (!allAnswered) {
+                showAlert('Por favor, responda todas las preguntas antes de finalizar la evaluación.');
+                return;
+            }
+
+            questionBlocks.forEach(block => {
+                const questionIndex = parseInt(block.dataset.index, 10);
+                const questionData = studentQuestions[questionIndex];
+                const feedbackArea = block.querySelector('.feedback-area');
+                
+                const { isCorrect } = evaluateSingleQuestion(block, questionData);
+
+                if (isCorrect) {
+                    correctAnswers++;
+                    feedbackArea.innerHTML = '<p class="font-bold text-green-600">✓ Correcto</p>';
+                } else {
+                    let correctDisplay = '';
+                     if (['Enumerar', 'Listas', 'Lineal'].includes(questionData.type)) {
+                        const pairs = JSON.parse(questionData.correctAnswer);
+                        correctDisplay = '<p class="font-bold text-red-600 text-left">✗ Incorrecto. Las respuestas correctas son:</p><ul class="list-disc list-inside text-left mt-2 text-sm">';
+                        pairs.forEach(pair => {
+                            correctDisplay += `<li><span class="font-semibold">${pair.termino}</span>: ${pair.definicion}</li>`;
+                        });
+                        correctDisplay += '</ul>';
+                    } else if (questionData.type === 'Arrastrar y Soltar') {
+                         correctDisplay = `<p class="font-bold text-red-600">✗ Incorrecto. Revisar el orden/selección correcta.</p>`;
+                    }
+                    else {
+                        let answer = questionData.correctAnswer;
+                        try {
+                           answer = JSON.parse(answer).join(', ');
+                        } catch(e){}
+                        correctDisplay = `<p class="font-bold text-red-600">✗ Incorrecto. La respuesta correcta es: "${answer}"</p>`;
+                    }
+                    feedbackArea.innerHTML = correctDisplay;
+                }
+                
+                // Disable inputs
+                block.querySelectorAll('input, select, .line-handle').forEach(el => {
+                    el.disabled = true;
+                    el.style.pointerEvents = 'none';
+                });
+                block.querySelectorAll('.drag-title').forEach(item => item.draggable = false);
+            });
+            
+            finalStudentScore = { correct: correctAnswers, total: studentQuestions.length };
+            const score = finalStudentScore.correct / finalStudentScore.total;
+            let message = `Tu puntuación: ${finalStudentScore.correct} de ${finalStudentScore.total}. `;
+            if (score >= 0.6) {
+                message += "¡Excelente trabajo, has aprobado la evaluación! Felicitaciones.";
+            } else {
+                message += "Sigue esforzándote, ¡la próxima vez lo harás mejor!";
+            }
+            finalScoreText.textContent = message;
+            finalScoreContainer.classList.remove('hidden');
+            finishEvaluationBtn.classList.add('hidden');
+            generateStudentPdfBtn.classList.remove('hidden');
+        });
+
+        generateStudentPdfBtn.addEventListener('click', () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const headerHeight = 40; // Height of the blue header bar
+
+            // Draw the blue background
+            doc.setFillColor(79, 70, 229); // A nice indigo color like 'bg-indigo-600'
+            doc.rect(0, 0, pageWidth, headerHeight, 'F');
+
+            // Set text color to white for the header
+            doc.setTextColor(255, 255, 255);
+
+            // Draw the header text
+            doc.setFontSize(18);
+            doc.setFont(undefined, 'bold');
+            doc.text("Resultado de la Evaluación", pageWidth / 2, 15, { align: 'center' });
+
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'normal');
+            doc.text("Programa SENATIC", pageWidth / 2, 24, { align: 'center' });
+            doc.text("Técnico en Sistemas Teleinformáticos", pageWidth / 2, 31, { align: 'center' });
+
+            // Reset text color for the rest of the document
+            doc.setTextColor(0, 0, 0);
+
+
+            const headerData = [
+                { title: "Competencia", value: document.getElementById('form_competencia').value },
+                { title: "Rap", value: document.getElementById('form_rap').value },
+                { title: "Tipo de Instrumento", value: document.getElementById('form_instrumento').value },
+                { title: "Tema a Evaluar", value: document.getElementById('form_tema').value },
+                { title: "Fecha", value: document.getElementById('form_fecha').value },
+                { title: "Ficha", value: document.getElementById('form_ficha').value },
+                { title: "Instructor", value: "Rafael Montes Martínez" },
+                { title: "Aprendiz", value: document.getElementById('studentName').value },
+            ];
+            
+            let currentY = headerHeight + 10;
+            const leftMargin = 14;
+            const rightMargin = 14;
+
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+
+            // --- START of change ---
+            // 1. Calculate the maximum width of all titles to align the values
+            let maxTitleWidth = 0;
+            headerData.forEach(item => {
+                const titleText = item.title + ':';
+                const width = doc.getTextWidth(titleText);
+                if (width > maxTitleWidth) {
+                    maxTitleWidth = width;
+                }
+            });
+
+            // 2. Define a consistent starting X position for all values
+            const valueX = leftMargin + maxTitleWidth + 4; // Add a bit more padding
+
+            headerData.forEach(item => {
+                const titleText = item.title + ':';
+                const valueText = item.value || '';
+
+                // Draw title
+                doc.setFont(undefined, 'bold');
+                doc.text(titleText, leftMargin, currentY, { align: 'left' });
+                
+                // Calculate height required for value text with wrapping
+                const splitValue = doc.splitTextToSize(valueText, pageWidth - rightMargin - valueX - 2);
+                const valueHeight = doc.getTextDimensions(splitValue).h;
+                const cellHeight = Math.max(6, valueHeight + 2);
+
+                // Draw background rectangle
+                doc.setFillColor(239, 246, 255); // bg-blue-50
+                doc.rect(valueX, currentY - 4, pageWidth - rightMargin - valueX, cellHeight, 'F');
+
+                // Draw value text
+                doc.setFont(undefined, 'normal');
+                doc.text(splitValue, valueX + 1, currentY);
+
+                currentY += cellHeight + 1;
+            });
+            // --- END of change ---
+
+
+            const tableData = studentQuestions.map((question, index) => {
+                const block = document.querySelectorAll('.question-block-student')[index];
+                const { isCorrect, userAnswer } = evaluateSingleQuestion(block, studentQuestions[index], 'pdf');
+                return [ index + 1, question.question, userAnswer || "Sin respuesta", isCorrect ? 'Correcto' : 'Incorrecto' ];
+            });
+
+            doc.autoTable({
+                head: [['#', 'Pregunta', 'Respuesta', 'Resultado']],
+                body: tableData,
+                startY: currentY + 5,
+                headStyles: { fillColor: [79, 70, 229] },
+                styles: { cellPadding: 2, fontSize: 9 },
+                columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 80 }, 2: { cellWidth: 'auto' }, 3: { cellWidth: 25 } },
+                didDrawCell: (data) => {
+                    if (data.section === 'body' && data.column.index === 3) {
+                        let fillColor;
+                        if (data.cell.text[0] === 'Correcto') {
+                            fillColor = [220, 250, 220]; // soft green
+                        } else if (data.cell.text[0] === 'Incorrecto') {
+                            fillColor = [255, 220, 220]; // soft red
+                        }
+                        
+                        if (fillColor) {
+                            doc.setFillColor(...fillColor);
+                            doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+                            doc.setTextColor(0, 0, 0);
+                            const textY = data.cell.y + data.cell.height / 2;
+                            doc.text(data.cell.text, data.cell.x + 2, textY, { baseline: 'middle' });
+                        }
+                    }
+                }
+            });
+
+            const finalY = doc.lastAutoTable.finalY;
+            
+            const score = finalStudentScore.correct / finalStudentScore.total;
+            let message = `Puntuación: ${finalStudentScore.correct} de ${finalStudentScore.total}. `;
+             if (score >= 0.6) { message += "Aprobado. ¡Felicitaciones!"; } else { message += "No aprobado. ¡Sigue esforzándote!"; }
+
+            const boxMargin = 14;
+            const boxWidth = pageWidth - (boxMargin * 2);
+            const boxHeight = 20;
+            const boxX = boxMargin;
+            const boxY = finalY + 15;
+
+            doc.setFillColor(253, 224, 71); // yellow-300
+            doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 3, 3, 'F');
+
+            doc.setFontSize(14);
+            doc.setTextColor(score >= 0.6 ? '#16a34a' : '#dc2626'); // green-600 or red-600
+            doc.setFont(undefined, 'bold');
+            
+            doc.text(message, pageWidth / 2, boxY + boxHeight / 2, { 
+                align: 'center', 
+                valign: 'middle' 
+            });
+
+            doc.save('mis_resultados.pdf');
+        });
+
+        // --- Lineal Question Logic ---
+        function initLinealQuestions() {
+            document.querySelectorAll('.lineal-container').forEach(container => {
+                let drawingLine = { isActive: false, startX: 0, startY: 0, endX: 0, endY: 0, startElement: null };
+                const svg = container.querySelector('.lineal-svg');
+                const questionBlock = container.closest('.question-block-student');
+                let connections = [];
+
+                const getHandleCenter = (handle) => {
+                    const rect = handle.getBoundingClientRect();
+                    const containerRect = container.getBoundingClientRect();
+                    return {
+                        x: rect.left + rect.width / 2 - containerRect.left,
+                        y: rect.top + rect.height / 2 - containerRect.top
+                    };
+                };
+
+                const drawLines = () => {
+                    svg.innerHTML = ''; // Clear previous lines
+                    connections.forEach(conn => {
+                        const startPos = getHandleCenter(conn.startElement);
+                        const endPos = getHandleCenter(conn.endElement);
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', startPos.x);
+                        line.setAttribute('y1', startPos.y);
+                        line.setAttribute('x2', endPos.x);
+                        line.setAttribute('y2', endPos.y);
+                        line.setAttribute('stroke', '#10b981');
+                        line.setAttribute('stroke-width', '3');
+                        svg.appendChild(line);
+                    });
+
+                    if (drawingLine.isActive) {
+                        const tempLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        tempLine.setAttribute('x1', drawingLine.startX);
+                        tempLine.setAttribute('y1', drawingLine.startY);
+                        tempLine.setAttribute('x2', drawingLine.endX);
+                        tempLine.setAttribute('y2', drawingLine.endY);
+                        tempLine.setAttribute('stroke', '#6366f1');
+                        tempLine.setAttribute('stroke-width', '3');
+                        tempLine.setAttribute('stroke-dasharray', '5,5');
+                        svg.appendChild(tempLine);
+                    }
+                };
+
+                const handleMouseMove = (e) => {
+                    if (!drawingLine.isActive) return;
+                    const containerRect = container.getBoundingClientRect();
+                    drawingLine.endX = e.clientX - containerRect.left;
+                    drawingLine.endY = e.clientY - containerRect.top;
+                    drawLines();
+                };
+
+                const handleMouseUp = (e) => {
+                    if (!drawingLine.isActive) return;
+                    
+                    const endElement = e.target.classList.contains('line-handle') ? e.target : null;
+
+                    if (endElement && endElement !== drawingLine.startElement && endElement.dataset.type !== drawingLine.startElement.dataset.type) {
+                        // Remove any existing connection from either handle
+                        connections = connections.filter(c => c.startElement !== drawingLine.startElement && c.endElement !== drawingLine.startElement && c.startElement !== endElement && c.endElement !== endElement);
+                        
+                        // Add new connection
+                        connections.push({ startElement: drawingLine.startElement, endElement: endElement });
+                        
+                        // Update connected status for styling
+                        container.querySelectorAll('.line-handle').forEach(h => h.classList.remove('connected'));
+                        connections.forEach(c => {
+                            c.startElement.classList.add('connected');
+                            c.endElement.classList.add('connected');
+                        });
+
+                        // Store connections in the dataset for evaluation
+                        const serializableConnections = connections.map(c => ({
+                            startText: c.startElement.dataset.text,
+                            endText: c.endElement.dataset.text
+                        }));
+                        questionBlock.dataset.connections = JSON.stringify(serializableConnections);
+
+                    }
+                    
+                    drawingLine.isActive = false;
+                    drawLines();
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                };
+
+                container.querySelectorAll('.line-handle').forEach(handle => {
+                    handle.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        const startPos = getHandleCenter(handle);
+                        drawingLine = {
+                            isActive: true,
+                            startX: startPos.x,
+                            startY: startPos.y,
+                            endX: startPos.x,
+                            endY: startPos.y,
+                            startElement: handle
+                        };
+                        document.addEventListener('mousemove', handleMouseMove);
+                        document.addEventListener('mouseup', handleMouseUp);
+                    });
+                });
+            });
+        }
+        
+        // --- Drag & Drop Question Logic ---
+        function initDragAndDropQuestions() {
+            let draggedId = null;
+            
+            document.querySelectorAll('.drag-title').forEach(title => {
+                title.addEventListener('dragstart', (e) => {
+                    draggedId = e.target.dataset.id;
+                    e.target.classList.add('dragging');
+                });
+                title.addEventListener('dragend', (e) => {
+                    e.target.classList.remove('dragging');
+                    draggedId = null;
+                });
+            });
+
+            document.querySelectorAll('.drop-definition').forEach(def => {
+                def.addEventListener('dragover', (e) => e.preventDefault());
+                def.addEventListener('dragenter', (e) => e.target.classList.add('hovering'));
+                def.addEventListener('dragleave', (e) => e.target.classList.remove('hovering'));
+                def.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    e.target.classList.remove('hovering');
+                    const questionBlock = e.target.closest('.question-block-student');
+                    const draggedElement = questionBlock.querySelector(`.drag-title[data-id="${draggedId}"]`);
+                    
+                    if (!draggedElement) return;
+
+                    // If drop target already has a title, return it to the list
+                    const existingTitle = e.target.querySelector('.drag-title');
+                    if (existingTitle) {
+                        questionBlock.querySelector(`#titles-col-${studentQuestions[questionBlock.dataset.index].id}`).appendChild(existingTitle);
+                    }
+                    
+                    // Append the new title
+                    e.target.appendChild(draggedElement);
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadEvaluation);
+    </script>
+</body>
+</html>
